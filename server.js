@@ -14,8 +14,11 @@ const PORT = process.env.PORT || 5000;
 // Import routes
 const authRoutes = require("./routes/Auth.router");
 const userRoutes = require("./routes/User.router");
+const calenderRoutes = require("./routes/CalenderEvent.router");
 const courseRoutes = require("./routes/Course.router");
-// const enrollmentRoutes = require("./routes/enrollment");
+const courseProgress = require("./routes/CourseProgress.router");
+const enrollmentRoutes = require("./routes/Enroll.router");
+const notificationRoutes = require("./routes/Notification.router");
 const announceRoutes = require("./routes/Announcement.router");
 const queryRoutes = require("./routes/Query.router");
 const uploadRoutes = require("./routes/Upload.router");
@@ -23,8 +26,11 @@ const uploadRoutes = require("./routes/Upload.router");
 // Use routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users",userRoutes);
+app.use("/api/calender", calenderRoutes);
 app.use("/api/courses", courseRoutes);
-// app.use("/api/enrollments", enrollmentRoutes);
+app.use("/api/courseProgress", courseProgress);
+app.use("/api/enrollments", enrollmentRoutes);
+app.use("/api/notifications", notificationRoutes);
 app.use("/api/announcements",announceRoutes);
 app.use("/api/queries", queryRoutes);
 app.use("/api/upload",uploadRoutes);

@@ -50,7 +50,7 @@ router.get("/", authenticate, requireMentor, async (req, res) => {
   }
 });
 
-// Get tickets for the current student
+// Get tickets for current student
 router.get("/student", authenticate, async (req, res) => {
   try {
     if (req.user.role !== "Student") {

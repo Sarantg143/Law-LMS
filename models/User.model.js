@@ -29,6 +29,10 @@ const userSchema = new Schema({
   email:       { type: String, required: true, unique: true },
   password:    { type: String },
   socialId:    {type: String,required: [false, 'Social media ID required'],unique: true,sparse: true  }, // For Google sign-in
+  enrolledCourses: [{
+    courseId: { type: Schema.Types.ObjectId, ref: "Course" },
+    enrolledAt: { type: Date, default: Date.now }
+  }],
   courseProgress:  {type: [CourseProgressSchema], default: [] },
   dob:         { type: Date },
   gender:      { type: String, enum: ["Male", "Female", "Others"] },
