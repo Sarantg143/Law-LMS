@@ -28,6 +28,8 @@ const userSchema = new Schema({
   username:    { type: String, required: true, unique: true },
   email:       { type: String, required: true, unique: true },
   password:    { type: String },
+  profilepic:  { type: String},
+  profilebanner: { type: String},
   socialId:    {type: String,required: [false, 'Social media ID required'],unique: true,sparse: true  }, // For Google sign-in
   enrolledCourses: [{
     courseId: { type: Schema.Types.ObjectId, ref: "Course" },

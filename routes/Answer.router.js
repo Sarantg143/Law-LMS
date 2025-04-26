@@ -72,8 +72,7 @@ router.post("/:courseId/:sublessonIndex", authenticate, async (req, res) => {
 
         await Notification.create({
           title: "Rank Changed",
-          message,
-          readBy: [],
+          message: message,
           targetUser: answerDoc.user
         });
       }

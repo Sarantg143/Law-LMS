@@ -12,14 +12,38 @@ const requireMentor = (req, res, next) => {
 };
 
 
+// router.get("/", authenticate, async (req, res) => {
+//   try {
+//     const notifications = await Notification.find().sort({ createdAt: -1 });
+
+//     const enriched = notifications.map(n => ({
+//       _id: n._id,
+//       title: n.title,
+//       message: n.message,
+//       createdAt: n.createdAt,
+//       isRead: n.readBy.includes(req.user._id)
+//     }));
+
+//     res.json(enriched);
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+
 router.get("/", authenticate, async (req, res) => {
   try {
-    const notifications = await Notification.find().sort({ createdAt: -1 });
+    const notifications = await Notification.find({
+      $or: [
+        { targetUser: null }, // global notification
+        { targetUser: req.user._id } // personal notification
+      ]
+    }).sort({ createdAt: -1 });
 
     const enriched = notifications.map(n => ({
       _id: n._id,
       title: n.title,
       message: n.message,
+      type: n.type,
       createdAt: n.createdAt,
       isRead: n.readBy.includes(req.user._id)
     }));
@@ -33,7 +57,7 @@ router.get("/", authenticate, async (req, res) => {
 router.post("/", authenticate, requireMentor, async (req, res) => {
   try {
     const { title, message, type } = req.body;
-    const notification = new Notification({ title, message, type });
+    const notification = new Notification({title,message,...(type && { type }) });
     await notification.save();
     res.status(201).json({ message: "Notification created", notification });
   } catch (err) {

@@ -16,6 +16,7 @@ const authRoutes = require("./routes/Auth.router");
 const userRoutes = require("./routes/User.router");
 const calenderRoutes = require("./routes/CalenderEvent.router");
 const courseRoutes = require("./routes/Course.router");
+const courseAchieveRoutes = require("./routes/CourseAchieve.router");
 const courseProgress = require("./routes/CourseProgress.router");
 const answerRoutes = require("./routes/Answer.router");
 const enrollmentRoutes = require("./routes/Enroll.router");
@@ -23,6 +24,8 @@ const forumRoutes = require("./routes/Forum.router");
 const notificationRoutes = require("./routes/Notification.router");
 const announceRoutes = require("./routes/Announcement.router");
 const queryRoutes = require("./routes/Query.router");
+const taskRoutes = require("./routes/Task.router");
+const taskAchieveRoutes = require("./routes/TaskAchieve.router");
 const uploadRoutes = require("./routes/Upload.router");
 
 // Use routes
@@ -30,6 +33,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users",userRoutes);
 app.use("/api/calender", calenderRoutes);
 app.use("/api/courses", courseRoutes);
+app.use("/api/courseAchievements", courseAchieveRoutes);
 app.use("/api/courseProgress", courseProgress);
 app.use("/api/answers", answerRoutes);
 app.use("/api/enrollments", enrollmentRoutes);
@@ -37,6 +41,8 @@ app.use("/api/forum", forumRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/announcements",announceRoutes);
 app.use("/api/queries", queryRoutes);
+app.use("/api/tasks",taskRoutes);
+app.use("/api/taskAchievements", taskAchieveRoutes);
 app.use("/api/upload",uploadRoutes);
 
 // Database connection

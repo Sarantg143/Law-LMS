@@ -2,8 +2,9 @@ const express = require("express");
 const router = express.Router();
 const User = require("../models/User.model");
 const Course = require("../models/Course.model");
+const Notification = require("../models/Notification.model");
 const authenticate = require("../middleware/auth");
-
+const createCourseAchievement = require("../middleware/createCourseAchievement");
 
 router.post("/:userId/:courseId", authenticate, async (req, res) => {
   try {
@@ -62,6 +63,17 @@ router.post("/:userId/:courseId", authenticate, async (req, res) => {
     progress.percentage = Math.round((completedLessonCount / totalLessons) * 100);
     progress.isCompleted = progress.percentage === 100;
 
+    if (progress.isCompleted) {
+      // await createCourseAchievement(user);
+    
+      await Notification.create({
+        title: "🎓 Course Completed",
+        message: `You’ve successfully completed the course "${course.title}".`,
+        targetUser: user._id,
+        type: "course"
+      });
+    }
+
     await user.save();
     res.json({ message: "Progress updated", progress });
 
@@ -84,6 +96,17 @@ router.get("/:userId/:courseId", authenticate, async (req, res) => {
     }
 
     res.json({ progress });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get("/", authenticate, async (req, res) => {
+  try {
+    const users = await User.find({ "courseProgress.0": { $exists: true } })
+      .select("username courseProgress");
+
+    res.json(users);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
