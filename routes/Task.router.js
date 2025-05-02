@@ -139,6 +139,9 @@ router.get("/", authenticate, async (req, res) => {
       } else if (task.createdBy.toString() === req.user._id.toString()) {
         status = "not_submitted";
       }
+      else if (!submission && new Date() > new Date(task.dueDate)) {
+      status = "overdue";
+      }
 
       return {
         _id: task._id,
@@ -178,5 +181,105 @@ router.get("/:taskId", authenticate, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+
+// Get all tasks and submission status per assigned user
+router.get("/all", authenticate, requireMentor, async (req, res) => {
+  try {
+    const tasks = await Task.find({ createdBy: req.user._id }).sort({ createdAt: -1 });
+
+    const detailedTasks = tasks.map(task => {
+      const assignedDetails = task.assignedTo.map(assign => {
+        const submission = task.submissions.find(
+          s => s.user.toString() === assign.user.toString()
+        );
+
+        return {
+          user: assign.user,
+          username: assign.username,
+          status: submission?.status || "not_submitted",
+          markGiven: submission?.markGiven || null,
+          reviewedBy: submission?.reviewedBy || null,
+          submittedAt: submission?.submittedAt || null
+        };
+      });
+
+      return {
+        _id: task._id,
+        title: task.title,
+        maxMarks: task.maxMarks,
+        dueDate: task.dueDate,
+        createdAt: task.createdAt,
+        assignedTo: assignedDetails
+      };
+    });
+
+    res.json(detailedTasks);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+router.get("/all1", authenticate, requireMentor, async (req, res) => {
+  try {
+    const isSummary = req.query.type === "summary";
+
+    const tasks = await Task.find({}).sort({ createdAt: -1 });
+
+    if (isSummary) {
+      const summary = tasks.map(task => {
+        const total = task.assignedTo.length;
+        const submitted = task.submissions.length;
+        const pending = total - submitted;
+
+        return {
+          taskId: task._id,
+          title: task.title,
+          createdBy: task.createdBy,
+          totalAssigned: total,
+          submitted,
+          pending,
+          dueDate: task.dueDate
+        };
+      });
+
+      return res.json(summary);
+    }
+
+    // Detailed view
+    const detailed = tasks.map(task => {
+      const assignedDetails = task.assignedTo.map(assign => {
+        const submission = task.submissions.find(
+          s => s.user.toString() === assign.user.toString()
+        );
+
+        return {
+          user: assign.user,
+          username: assign.username,
+          status: submission?.status || "not_submitted",
+          markGiven: submission?.markGiven || null,
+          reviewedBy: submission?.reviewedBy || null,
+          submittedAt: submission?.submittedAt || null
+        };
+      });
+
+      return {
+        _id: task._id,
+        title: task.title,
+        maxMarks: task.maxMarks,
+        dueDate: task.dueDate,
+        createdAt: task.createdAt,
+        assignedTo: assignedDetails
+      };
+    });
+
+    res.json(detailed);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 
 module.exports = router;
