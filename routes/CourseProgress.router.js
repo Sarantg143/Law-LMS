@@ -51,21 +51,25 @@ router.post("/:userId/:courseId", authenticate, async (req, res) => {
       });
     }
 
+    // Update lesson completion
     const completedSubCount = lesson.sublessons.length;
     const totalSubCount = totalSubCounts[lessonIndex];
-
     lesson.percentage = Math.round((completedSubCount / totalSubCount) * 100);
     lesson.isLessonCompleted = completedSubCount === totalSubCount;
 
-    const completedLessonCount = progress.completedLessons.filter(l => l.isLessonCompleted).length;
+    // Count total sublessons in the course
+    const totalCourseSubCount = totalSubCounts.reduce((sum, count) => sum + count, 0);
 
-    progress.completedLessonCount = completedLessonCount;
-    progress.percentage = Math.round((completedLessonCount / totalLessons) * 100);
+    // Count all completed sublessons across all lessons
+    const completedSubTotal = progress.completedLessons.reduce((sum, l) => sum + l.sublessons.length, 0);
+    
+    progress.percentage = Math.round((completedSubTotal / totalCourseSubCount) * 100);
     progress.isCompleted = progress.percentage === 100;
 
+    const completedLessonCount = progress.completedLessons.filter(l => l.isLessonCompleted).length;
+    progress.completedLessonCount = completedLessonCount;
+
     if (progress.isCompleted) {
-      // await createCourseAchievement(user);
-    
       await Notification.create({
         title: "🎓 Course Completed",
         message: `You’ve successfully completed the course "${course.title}".`,
