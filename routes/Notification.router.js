@@ -29,14 +29,14 @@ const requireMentor = (req, res, next) => {
 //     res.status(500).json({ error: err.message });
 //   }
 // });
-
 router.get("/", authenticate, async (req, res) => {
   try {
     const notifications = await Notification.find({
       $or: [
-        { targetUser: null }, // global notification
-        { targetUser: req.user._id } // personal notification
-      ]
+        { targetUser: null }, // Global notification
+        { targetUser: req.user._id } // Personal notification
+      ],
+      readBy: { $ne: req.user._id } // Exclude read notifications
     }).sort({ createdAt: -1 });
 
     const enriched = notifications.map(n => ({
@@ -45,7 +45,7 @@ router.get("/", authenticate, async (req, res) => {
       message: n.message,
       type: n.type,
       createdAt: n.createdAt,
-      isRead: n.readBy.includes(req.user._id)
+      isRead: false // Since these are unread by this user
     }));
 
     res.json(enriched);
@@ -53,6 +53,30 @@ router.get("/", authenticate, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// router.get("/", authenticate, async (req, res) => {
+//   try {
+//     const notifications = await Notification.find({
+//       $or: [
+//         { targetUser: null }, // global notification
+//         { targetUser: req.user._id } // personal notification
+//       ]
+//     }).sort({ createdAt: -1 });
+
+//     const enriched = notifications.map(n => ({
+//       _id: n._id,
+//       title: n.title,
+//       message: n.message,
+//       type: n.type,
+//       createdAt: n.createdAt,
+//       isRead: n.readBy.includes(req.user._id)
+//     }));
+
+//     res.json(enriched);
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
 
 router.post("/", authenticate, requireMentor, async (req, res) => {
   try {
