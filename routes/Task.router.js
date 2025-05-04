@@ -126,7 +126,7 @@ router.get("/", authenticate, async (req, res) => {
       $or: [
         { "assignedTo.user": req.user._id },
         { assignedTo: { $size: 0 } },
-        { createdBy: req.user._id }
+        // { createdBy: req.user._id }
       ]
     }).sort({ createdAt: -1 });
 
@@ -184,9 +184,45 @@ router.get("/:taskId", authenticate, async (req, res) => {
 
 
 // Get all tasks and submission status per assigned user
+// router.get("/all", authenticate, requireMentor, async (req, res) => {
+//   try {
+//     const tasks = await Task.find({ createdBy: req.user._id }).sort({ createdAt: -1 });
+
+//     const detailedTasks = tasks.map(task => {
+//       const assignedDetails = task.assignedTo.map(assign => {
+//         const submission = task.submissions.find(
+//           s => s.user.toString() === assign.user.toString()
+//         );
+
+//         return {
+//           user: assign.user,
+//           username: assign.username,
+//           status: submission?.status || "not_submitted",
+//           markGiven: submission?.markGiven || null,
+//           reviewedBy: submission?.reviewedBy || null,
+//           submittedAt: submission?.submittedAt || null
+//         };
+//       });
+
+//       return {
+//         _id: task._id,
+//         title: task.title,
+//         maxMarks: task.maxMarks,
+//         dueDate: task.dueDate,
+//         createdAt: task.createdAt,
+//         assignedTo: assignedDetails
+//       };
+//     });
+
+//     res.json(detailedTasks);
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+
 router.get("/all", authenticate, requireMentor, async (req, res) => {
   try {
-    const tasks = await Task.find({ createdBy: req.user._id }).sort({ createdAt: -1 });
+    const tasks = await Task.find().sort({ createdAt: -1 }); 
 
     const detailedTasks = tasks.map(task => {
       const assignedDetails = task.assignedTo.map(assign => {
@@ -210,6 +246,7 @@ router.get("/all", authenticate, requireMentor, async (req, res) => {
         maxMarks: task.maxMarks,
         dueDate: task.dueDate,
         createdAt: task.createdAt,
+        createdBy: task.createdBy,
         assignedTo: assignedDetails
       };
     });
@@ -219,6 +256,7 @@ router.get("/all", authenticate, requireMentor, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 
 router.get("/all1", authenticate, requireMentor, async (req, res) => {
