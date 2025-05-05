@@ -33,8 +33,11 @@ const userSchema = new Schema({
   socialId:    {type: String,required: [false, 'Social media ID required'],unique: true,sparse: true  }, // For Google sign-in
   enrolledCourses: [{
     courseId: { type: Schema.Types.ObjectId, ref: "Course" },
-    enrolledAt: { type: Date, default: Date.now }
+    enrolledAt: { type: Date, default: Date.now },
+    expiryDate: { type: Date, default: () => new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) }, // 1 year default
+    isApproved: { type: Boolean, default: false }
   }],
+  
   courseProgress:  {type: [CourseProgressSchema], default: [] },
   dob:         { type: Date },
   gender:      { type: String, enum: ["Male", "Female", "Others"] },

@@ -38,6 +38,10 @@ const forumPostSchema = new Schema({
     type: Boolean,
     default: false
   },
+  approved: {
+    type: Boolean,
+    default: false
+  },  
   replies: [
     {
       user: { type: Schema.Types.ObjectId, ref: "User" },

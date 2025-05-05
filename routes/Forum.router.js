@@ -46,6 +46,21 @@ router.get("/:id", authenticate, async (req, res) => {
   }
 });
 
+// Approve a forum post 
+router.put("/:id/approve", authenticate, async (req, res) => {
+  try {
+    const post = await ForumPost.findById(req.params.id);
+    if (!post) return res.status(404).json({ error: "Post not found" });
+
+    post.approved = true;
+    await post.save();
+
+    res.json({ message: "Post approved", post });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.post("/:id/reply", authenticate, async (req, res) => {
   try {
     const { message, files = [] } = req.body;
