@@ -3,15 +3,37 @@ const router = express.Router();
 const Event = require("../models/CalenderEvent.model");
 const authenticate = require("../middleware/auth");
 
+// router.post("/", authenticate, async (req, res) => {
+//   try {
+//     const { title, startDate, endDate } = req.body;
+
+//     const event = new Event({
+//       userId: req.user._id,
+//       title,
+//       startDate,
+//       endDate
+//     });
+
+//     await event.save();
+//     res.status(201).json({ message: "Event created", event });
+//   } catch (err) {
+//     res.status(400).json({ error: err.message });
+//   }
+// });
+
 router.post("/", authenticate, async (req, res) => {
   try {
-    const { title, startDate, endDate } = req.body;
+    const { title, startDate, endDate, link } = req.body;
+
+    const isMentor = req.user.role === 'Mentor';
 
     const event = new Event({
       userId: req.user._id,
       title,
       startDate,
-      endDate
+      endDate,
+      link,
+      isPublic: isMentor, // true only if mentor creates it
     });
 
     await event.save();
@@ -22,9 +44,23 @@ router.post("/", authenticate, async (req, res) => {
 });
 
 
+// router.get("/", authenticate, async (req, res) => {
+//   try {
+//     const events = await Event.find({ userId: req.user._id }).sort({ startDate: 1 });
+//     res.json(events);
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
 router.get("/", authenticate, async (req, res) => {
   try {
-    const events = await Event.find({ userId: req.user._id }).sort({ startDate: 1 });
+    const events = await Event.find({
+      $or: [
+        { userId: req.user._id },
+        { isPublic: true }
+      ]
+    }).sort({ startDate: 1 });
+
     res.json(events);
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -21,7 +21,13 @@ const EventSchema = new mongoose.Schema({
   duration: {
     type: Number, 
   },
+  isPublic: {
+    type: Boolean,
+    default: false,
+  },
+  link: String,
 });
+
 
 
 EventSchema.pre('save', function (next) {
