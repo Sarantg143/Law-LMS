@@ -21,6 +21,7 @@ const courseProgress = require("./routes/CourseProgress.router");
 const answerRoutes = require("./routes/Answer.router");
 const enrollmentRoutes = require("./routes/Enroll.router");
 const forumRoutes = require("./routes/Forum.router");
+const messageRoutes = require("./routes/Message.router")
 const notificationRoutes = require("./routes/Notification.router");
 const announceRoutes = require("./routes/Announcement.router");
 const queryRoutes = require("./routes/Query.router");
@@ -38,6 +39,7 @@ app.use("/api/courseProgress", courseProgress);
 app.use("/api/answers", answerRoutes);
 app.use("/api/enrollments", enrollmentRoutes);
 app.use("/api/forum", forumRoutes);
+app.use("api/message",messageRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/announcements",announceRoutes);
 app.use("/api/queries", queryRoutes);
