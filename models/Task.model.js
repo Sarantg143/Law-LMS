@@ -11,7 +11,7 @@ const submissionSchema = new Schema({
   submittedAt: { type: Date, default: Date.now },
   status: {
     type: String,
-    enum: ["not_uploaded", "uploaded", "for_review", "approved", "rejected"],
+    enum: ["not_uploaded", "uploaded", "for_review", "approved", "rejected","late submission","resubmit"],
     default: "not_uploaded"
   },
   markGiven: { type: Number, default: null },

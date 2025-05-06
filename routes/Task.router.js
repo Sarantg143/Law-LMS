@@ -57,19 +57,31 @@ router.post("/submit/:taskId", authenticate, async (req, res) => {
     const task = await Task.findById(req.params.taskId);
     if (!task) return res.status(404).json({ error: "Task not found" });
 
-    const existing = task.submissions.find(s => s.user.toString() === req.user._id.toString());
+    const userId = req.user._id.toString();
+    const existing = task.submissions.find(s => s.user.toString() === userId);
 
-    const submission = {
-      user: req.user._id,
-      username: req.user.username,
-      file,
-      driveLink,
-      status: "for_review",
-      submittedAt: new Date()
-    };
+    const now = new Date();
+    const isLate = task.dueDate && now > new Date(task.dueDate);
+    const newStatus = isLate ? "late submission" : "for_review";
 
-    if (existing) Object.assign(existing, submission);
-    else task.submissions.push(submission);
+    if (existing) {
+      if (!["resubmit", "not submitted"].includes(existing.status)) {
+        return res.status(400).json({ error: `You can only resubmit if status is 'resubmit' or 'not submitted'. Current status: ${existing.status}` });
+      }
+      existing.file = file;
+      existing.driveLink = driveLink;
+      existing.status = newStatus;
+      existing.submittedAt = now;
+    } else {
+      task.submissions.push({
+        user: req.user._id,
+        username: req.user.username,
+        file,
+        driveLink,
+        status: newStatus,
+        submittedAt: now
+      });
+    }
 
     await task.save();
 
@@ -80,11 +92,46 @@ router.post("/submit/:taskId", authenticate, async (req, res) => {
       targetUser: task.createdBy
     });
 
-    res.json({ message: "Submitted", submission });
+    res.json({ message: isLate ? "Submitted (Late)" : "Submitted", status: newStatus });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
+// router.post("/submit/:taskId", authenticate, async (req, res) => {
+//   try {
+//     const { file, driveLink } = req.body;
+//     const task = await Task.findById(req.params.taskId);
+//     if (!task) return res.status(404).json({ error: "Task not found" });
+
+//     const existing = task.submissions.find(s => s.user.toString() === req.user._id.toString());
+
+//     const submission = {
+//       user: req.user._id,
+//       username: req.user.username,
+//       file,
+//       driveLink,
+//       status: "for_review",
+//       submittedAt: new Date()
+//     };
+
+//     if (existing) Object.assign(existing, submission);
+//     else task.submissions.push(submission);
+
+//     await task.save();
+
+//     // Notify mentor
+//     await Notification.create({
+//       title: "Task Submitted",
+//       message: `${req.user.username} submitted the task "${task.title}"`,
+//       targetUser: task.createdBy
+//     });
+
+//     res.json({ message: "Submitted", submission });
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
 
 // Mentor review
 router.put("/review/:taskId/:userId", authenticate, requireMentor, async (req, res) => {
@@ -98,7 +145,7 @@ router.put("/review/:taskId/:userId", authenticate, requireMentor, async (req, r
     const sub = task.submissions.find(s => s.user.toString() === userId);
     if (!sub) return res.status(404).json({ error: "Submission not found" });
 
-    if (status && ["approved", "rejected", "for_review"].includes(status)) {
+    if (status && ["approved", "not approved", "for_review", "resubmit"].includes(status)) {
       sub.status = status;
     }
 
@@ -109,8 +156,8 @@ router.put("/review/:taskId/:userId", authenticate, requireMentor, async (req, r
     await task.save();
 
     await Notification.create({
-      title: `Task ${status === "approved" ? "Approved" : "Rejected"}`,
-      message: `Your submission for "${task.title}" was ${status}.`,
+      title: `Task Reviewed: ${status}`,
+      message: `Your submission for "${task.title}" was marked as "${status}".`,
       targetUser: userId
     });
 
@@ -119,6 +166,39 @@ router.put("/review/:taskId/:userId", authenticate, requireMentor, async (req, r
     res.status(500).json({ error: err.message });
   }
 });
+
+// router.put("/review/:taskId/:userId", authenticate, requireMentor, async (req, res) => {
+//   try {
+//     const { status, markGiven, reviewNote } = req.body;
+//     const { taskId, userId } = req.params;
+
+//     const task = await Task.findById(taskId);
+//     if (!task) return res.status(404).json({ error: "Task not found" });
+
+//     const sub = task.submissions.find(s => s.user.toString() === userId);
+//     if (!sub) return res.status(404).json({ error: "Submission not found" });
+
+//     if (status && ["approved", "rejected", "for_review"].includes(status)) {
+//       sub.status = status;
+//     }
+
+//     if (markGiven !== undefined) sub.markGiven = markGiven;
+//     if (reviewNote) sub.reviewNote = reviewNote;
+//     sub.reviewedBy = req.user._id;
+
+//     await task.save();
+
+//     await Notification.create({
+//       title: `Task ${status === "approved" ? "Approved" : "Rejected"}`,
+//       message: `Your submission for "${task.title}" was ${status}.`,
+//       targetUser: userId
+//     });
+
+//     res.json({ message: "Reviewed", submission: sub });
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
 
 router.get("/", authenticate, async (req, res) => {
   try {
