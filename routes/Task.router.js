@@ -206,7 +206,7 @@ router.get("/", authenticate, async (req, res) => {
       $or: [
         { "assignedTo.user": req.user._id },
         { assignedTo: { $size: 0 } },
-        // { createdBy: req.user._id }
+        { createdBy: req.user._id }
       ]
     }).sort({ createdAt: -1 });
 
@@ -243,24 +243,6 @@ router.get("/", authenticate, async (req, res) => {
   }
 });
 
-
-router.get("/:taskId", authenticate, async (req, res) => {
-  try {
-    const task = await Task.findById(req.params.taskId);
-    if (!task) return res.status(404).json({ error: "Task not found" });
-
-    const mySubmission = task.submissions.find(
-      s => s.user.toString() === req.user._id.toString()
-    );
-
-    res.json({
-      ...task.toObject(),
-      mySubmission: mySubmission || null
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
 
 // Get all tasks and submission status per assigned user
@@ -300,9 +282,10 @@ router.get("/:taskId", authenticate, async (req, res) => {
 //   }
 // });
 
+
 router.get("/all", authenticate, requireMentor, async (req, res) => {
   try {
-    const tasks = await Task.find().sort({ createdAt: -1 }); 
+    const tasks = await Task.find().sort({ createdAt: -1 });
 
     const detailedTasks = tasks.map(task => {
       const assignedDetails = task.assignedTo.map(assign => {
@@ -337,67 +320,21 @@ router.get("/all", authenticate, requireMentor, async (req, res) => {
   }
 });
 
-
-
-router.get("/all1", authenticate, requireMentor, async (req, res) => {
+router.get("/:taskId", authenticate, async (req, res) => {
   try {
-    const isSummary = req.query.type === "summary";
+    const task = await Task.findById(req.params.taskId);
+    if (!task) return res.status(404).json({ error: "Task not found" });
 
-    const tasks = await Task.find({}).sort({ createdAt: -1 });
+    const mySubmission = task.submissions.find(
+      s => s.user.toString() === req.user._id.toString()
+    );
 
-    if (isSummary) {
-      const summary = tasks.map(task => {
-        const total = task.assignedTo.length;
-        const submitted = task.submissions.length;
-        const pending = total - submitted;
-
-        return {
-          taskId: task._id,
-          title: task.title,
-          createdBy: task.createdBy,
-          totalAssigned: total,
-          submitted,
-          pending,
-          dueDate: task.dueDate
-        };
-      });
-
-      return res.json(summary);
-    }
-
-    // Detailed view
-    const detailed = tasks.map(task => {
-      const assignedDetails = task.assignedTo.map(assign => {
-        const submission = task.submissions.find(
-          s => s.user.toString() === assign.user.toString()
-        );
-
-        return {
-          user: assign.user,
-          username: assign.username,
-          status: submission?.status || "not_submitted",
-          markGiven: submission?.markGiven || null,
-          reviewedBy: submission?.reviewedBy || null,
-          submittedAt: submission?.submittedAt || null
-        };
-      });
-
-      return {
-        _id: task._id,
-        title: task.title,
-        maxMarks: task.maxMarks,
-        dueDate: task.dueDate,
-        createdAt: task.createdAt,
-        assignedTo: assignedDetails
-      };
+    res.json({
+      ...task.toObject(),
+      mySubmission: mySubmission || null
     });
-
-    res.json(detailed);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
-
-
-
 module.exports = router;
