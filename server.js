@@ -6,7 +6,23 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+
+
+// const allowedOrigins = ["https://lms-course-sigma.vercel.app"];
+app.use(cors({ origin: "*", credentials: true }));
+// app.use(cors({
+//   origin: function (origin, callback) {
+//     // allow requests with no origin like mobile apps or curl
+//     if (!origin) return callback(null, true);
+//     if (allowedOrigins.includes(origin)) {
+//       return callback(null, true);
+//     } else {
+//       return callback(new Error("Not allowed by CORS"));
+//     }
+//   },
+//   credentials: true
+// }));
+
 
 const PORT = process.env.PORT || 5000;
 
@@ -39,7 +55,7 @@ app.use("/api/courseProgress", courseProgress);
 app.use("/api/answers", answerRoutes);
 app.use("/api/enrollments", enrollmentRoutes);
 app.use("/api/forum", forumRoutes);
-app.use("api/message",messageRoutes);
+app.use("/api/message",messageRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/announcements",announceRoutes);
 app.use("/api/queries", queryRoutes);
