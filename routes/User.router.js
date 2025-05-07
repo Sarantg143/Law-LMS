@@ -129,27 +129,29 @@ router.put("/change-role/:userId", authenticate, requireMentor, async (req, res)
   
 
   // Approve user's course enrollment
-router.put("/approve/:userId/:courseId", authenticate,requireMentor, async (req, res) => {
-  try {
-    const { userId, courseId } = req.params;
-
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ error: "User not found" });
-
-    const course = user.enrolledCourses.find(
-      c => c.courseId.toString() === courseId
-    );
-
-    if (!course) return res.status(404).json({ error: "Enrollment not found" });
-
-    course.isApproved = true;
-    await user.save();
-
-    res.json({ message: "Enrollment approved" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+  router.put("/approve/:userId/:courseId", authenticate, requireMentor, async (req, res) => {
+    try {
+      const { userId, courseId } = req.params;
+      const user = await User.findById(userId);
+      if (!user) return res.status(404).json({ error: "User not found" });
+      const course = user.enrolledCourses.find(
+        c => c.courseId.toString() === courseId
+      );
+  
+      if (!course) return res.status(404).json({ error: "Enrollment not found" });
+      // Toggle approval status
+      course.isApproved = !course.isApproved;
+      await user.save();
+  
+      res.json({
+        message: `Enrollment ${course.isApproved ? "approved" : "unapproved"}`,
+        isApproved: course.isApproved
+      });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+ 
 
 // Update expiry date of enrollment
 router.put("/update-expiry/:userId/:courseId", authenticate,requireMentor, async (req, res) => {
