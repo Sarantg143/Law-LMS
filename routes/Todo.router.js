@@ -3,8 +3,6 @@ const router = express.Router();
 const authenticate = require("../middleware/auth");
 const Todo = require("../models/Todo.model");
 
-
-  // routes/todo.js
 router.get("/", authenticate, async (req, res) => {
     try {
       const { status, date } = req.query;
@@ -36,7 +34,7 @@ router.get("/", authenticate, async (req, res) => {
         text,
         completed: false,
         user: req.user._id,
-        date: new Date(), // ✅ Save current date
+        date: new Date(), 
       });
       await todo.save();
       res.status(201).json(todo);
@@ -44,29 +42,8 @@ router.get("/", authenticate, async (req, res) => {
       res.status(500).json({ error: "Failed to add todo" });
     }
   });
-// POST create a new todo
-// router.post("/", authenticate, async (req, res) => {
-//     try {
-//       const { text, date } = req.body;
-//       if (!text || !date) {
-//         return res.status(400).json({ error: "Text and date are required" });
-//       }
-  
-//       const newTodo = new Todo({
-//         user: req.user._id,
-//         text,
-//         date,
-//         completed: false,
-//       });
-  
-//       await newTodo.save();
-//       res.status(201).json(newTodo);
-//     } catch (error) {
-//       console.error("Failed to create todo:", error.message);
-//       res.status(500).json({ error: "Failed to create todo" });
-//     }
-//   });
-  
+
+
   router.put("/toggle/:id", authenticate, async (req, res) => {
     try {
       const todo = await Todo.findOne({

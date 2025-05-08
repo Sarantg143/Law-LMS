@@ -50,6 +50,40 @@ router.post("/", authenticate, requireMentor, async (req, res) => {
   }
 });
 
+router.put("/:taskId", authenticate, requireMentor, async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    const { title, description, file, maxMarks, assignedTo = [], dueDate } = req.body;
+
+    const task = await Task.findById(taskId);
+    if (!task) return res.status(404).json({ error: "Task not found" });
+
+    // Update fields
+    if (title) task.title = title;
+    if (description !== undefined) task.description = description;
+    if (file) task.file = file;
+    if (maxMarks !== undefined) task.maxMarks = maxMarks;
+    if (dueDate) task.dueDate = dueDate;
+
+    // Handle reassignment of users (optional)
+    if (assignedTo.length > 0) {
+      const users = await User.find({ _id: { $in: assignedTo } });
+      task.assignedTo = users.map(u => ({ user: u._id, username: u.username }));
+      // Reset submissions when reassigned (optional logic)
+      task.submissions = task.submissions.filter(sub =>
+        assignedTo.includes(sub.user.toString())
+      );
+    }
+
+    await task.save();
+
+    res.json({ message: "Task updated successfully", task });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // Submit assignment (Student)
 router.post("/submit/:taskId", authenticate, async (req, res) => {
   try {
