@@ -22,7 +22,7 @@ function requireAdmin(req, res, next) {
 
 
 //all users
-router.get("/", authenticate, requireMentor, async (req, res) => {
+router.get("/", authenticate, async (req, res) => {
   try {
     const users = await User.find().select("-password");
     res.json(users);
