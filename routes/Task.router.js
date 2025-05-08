@@ -340,6 +340,7 @@ router.get("/all", authenticate, requireMentor, async (req, res) => {
       return {
         _id: task._id,
         title: task.title,
+        fileUrl: task.file.url,
         maxMarks: task.maxMarks,
         dueDate: task.dueDate,
         createdAt: task.createdAt,
