@@ -41,6 +41,9 @@ const userSchema = new Schema({
   courseProgress:  {type: [CourseProgressSchema], default: [] },
   dob:         { type: Date },
   gender:      { type: String, enum: ["Male", "Female", "Others"] },
+  phone:         { type: String, unique: true, sparse: true }, 
+  address:       { type: String }, 
+  education:     { type: String },
   isApproved:  { type: Boolean, default: false }, // Admin approval required
   role:        { type: String, enum: ["Mentor", "Student"], default: "Student" },
   token:       { type: String }
